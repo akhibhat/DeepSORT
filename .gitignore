@@ -10,3 +10,5 @@ backup
 weights/
 __pycache__
 checkpoints
+MOT16/
+resources/
