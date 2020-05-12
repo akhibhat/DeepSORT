@@ -33,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_cpu", type=int, default=0, help="number of cpu threads to use during batch generation")
     parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
     parser.add_argument("--checkpoint_model", type=str, help="path to checkpoint model")
+    parser.add_argument("--detection_output", type=str, help="path to output folder")
     opt = parser.parse_args()
     print(opt)
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         model.load_darknet_weights(opt.weights_path)
     else:
         # Load checkpoint weights
-        model.load_state_dict(torch.load(opt.weights_path))
+        model.load_state_dict(torch.load(opt.weights_path, map_location=torch.device('cpu')))
 
     model.eval()  # Set in evaluation mode
 
@@ -91,6 +92,9 @@ if __name__ == "__main__":
     cmap = plt.get_cmap("tab20b")
     colors = [cmap(i) for i in np.linspace(0, 1, 20)]
 
+    detection_filename = opt.detection_output + "/det17.txt"
+    detection_file = open(detection_filename, "w+")
+
     print("\nSaving images:")
     # Iterate through images and save plot of detections
     for img_i, (path, detections) in enumerate(zip(imgs, img_detections)):
@@ -117,6 +121,8 @@ if __name__ == "__main__":
                 box_w = x2 - x1
                 box_h = y2 - y1
 
+                detection_file.writelines(str(img_i+1)+",-1,"+str(x1.item())+","+str(y1.item())+","+str(box_w.item())+","+str(box_h.item())+","+str(cls_conf.item())+",-1,-1,-1\n" )
+
                 color = bbox_colors[int(np.where(unique_labels == int(cls_pred))[0])]
                 # Create a Rectangle patch
                 bbox = patches.Rectangle((x1, y1), box_w, box_h, linewidth=2, edgecolor=color, facecolor="none")
@@ -137,5 +143,5 @@ if __name__ == "__main__":
         plt.gca().xaxis.set_major_locator(NullLocator())
         plt.gca().yaxis.set_major_locator(NullLocator())
         filename = path.split("/")[-1].split(".")[0]
-        plt.savefig(f"output/{filename}.png", bbox_inches="tight", pad_inches=0.0)
+        plt.savefig(f"output/MOT16-07/{filename}.png", bbox_inches="tight", pad_inches=0.0)
         plt.close()

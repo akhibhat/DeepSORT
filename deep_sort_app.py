@@ -6,6 +6,7 @@ import os
 
 import cv2
 import numpy as np
+import pdb
 
 from application_util import preprocessing
 from application_util import visualization
@@ -41,8 +42,9 @@ def gather_sequence_info(sequence_dir, detection_file):
 
     """
     image_dir = os.path.join(sequence_dir, "img1")
+    #pdb.set_trace()
     image_filenames = {
-        int(os.path.splitext(f)[0]): os.path.join(image_dir, f)
+            int(os.path.splitext(f)[0][-5:]): os.path.join(image_dir, f)
         for f in os.listdir(image_dir)}
     groundtruth_file = os.path.join(sequence_dir, "gt/gt.txt")
 
@@ -200,7 +202,7 @@ def run(sequence_dir, detection_file, output_file, min_confidence,
 
     # Run tracker.
     if display:
-        visualizer = visualization.Visualization(seq_info, update_ms=5)
+        visualizer = visualization.Visualization(seq_info, update_ms=100)
     else:
         visualizer = visualization.NoVisualization(seq_info)
     visualizer.run(frame_callback)
